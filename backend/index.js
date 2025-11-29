@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const helmet = require('helmet');
 const bcrypt = require('bcryptjs'); // Necesario para el admin
 const Usuario = require('./models/Usuario'); // Importado UNA sola vez aquí arriba
 const historicoRoutes = require('./routes/historico');
@@ -11,6 +12,7 @@ dotenv.config();
 const app = express();
 
 // Middlewares
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use('/api/historico', historicoRoutes);
