@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import API_URL from '../config'
+import API_URL from '../config'; 
 
 function Login({ alIniciarSesion }) {
   const [email, setEmail] = useState('');
@@ -11,26 +11,22 @@ function Login({ alIniciarSesion }) {
     setError('');
 
     try {
-    // CORREGIDO: Agregamos "/auth"
-    const res = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
       const data = await res.json();
 
       if (res.ok) {
-        // Guardamos la llave (token) en el bolsillo del navegador
         localStorage.setItem('token', data.token);
         localStorage.setItem('usuario', JSON.stringify(data.usuario));
-        
-        // Avisamos a la App principal que ya entramos
         alIniciarSesion();
       } else {
         setError(data.mensaje || 'Error al entrar');
       }
-    } catch (_err) {
+    } catch (err) {
       setError('Error de conexión con el servidor');
     }
   };
@@ -38,7 +34,7 @@ function Login({ alIniciarSesion }) {
   return (
     <div style={{ 
       height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' // Fondo degradado elegante
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     }}>
       <div style={{ background: 'white', padding: '40px', borderRadius: '10px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', width: '350px' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333' }}>Gastro-Stock 🍽️</h2>
@@ -47,8 +43,11 @@ function Login({ alIniciarSesion }) {
 
         <form onSubmit={manejarLogin}>
           <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Correo:</label>
+            <label htmlFor="email" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Correo:</label>
             <input 
+              id="email"                   // <--- AGREGA ESTO
+              name="email"                 // <--- AGREGA ESTO
+              autoComplete="username"      // <--- AYUDA AL NAVEGADOR
               type="email" 
               value={email} 
               onChange={e => setEmail(e.target.value)}
@@ -59,8 +58,11 @@ function Login({ alIniciarSesion }) {
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Contraseña:</label>
+            <label htmlFor="password" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Contraseña:</label>
             <input 
+              id="password"                // <--- AGREGA ESTO
+              name="password"              // <--- AGREGA ESTO
+              autoComplete="current-password" // <--- AYUDA AL NAVEGADOR
               type="password" 
               value={password} 
               onChange={e => setPassword(e.target.value)}
