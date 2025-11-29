@@ -26,7 +26,8 @@ function Login({ alIniciarSesion }) {
       } else {
         setError(data.mensaje || 'Error al entrar');
       }
-    } catch (err) {
+    }
+    catch (err) {
       setError('Error de conexión con el servidor');
     }
   };
