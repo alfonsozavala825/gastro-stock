@@ -1,0 +1,43 @@
+:root {
+  /* MODO CLARO (Por defecto) ☀️ */
+  --bg-main: #f0f2f5;       /* Fondo gris claro de la pantalla */
+  --bg-card: #ffffff;       /* Fondo blanco de tarjetas */
+  --bg-sidebar: #ffffff;    /* Fondo de la barra lateral */
+  --text-primary: #333333;  /* Texto principal oscuro */
+  --text-secondary: #666666;/* Texto secundario gris */
+  --border-color: #dddddd;  /* Color de bordes */
+  --shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+[data-theme='dark'] {
+  /* MODO OSCURO 🌙 */
+  --bg-main: #18191a;       /* Negro suave (estilo Facebook/Twitter) */
+  --bg-card: #242526;       /* Gris oscuro para tarjetas */
+  --bg-sidebar: #242526;
+  --text-primary: #e4e6eb;  /* Texto casi blanco */
+  --text-secondary: #b0b3b8;
+  --border-color: #3e4042;
+  --shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Aplicamos las variables a todo el sitio */
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  margin: 0;
+  font-family: sans-serif;
+  transition: background-color 0.3s, color 0.3s; /* Transición suave */
+}
+
+/* Clases utilitarias para usar en tus componentes */
+.card {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+.sidebar {
+  background-color: var(--bg-sidebar) !important;
+  border-right: 1px solid var(--border-color);
+}
