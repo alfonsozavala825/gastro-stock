@@ -18,7 +18,7 @@ function Escaner({ alEscanear }) {
       alEscanear(decodedText);
     };
 
-    const onScanFailure = (error) => {
+    const onScanFailure = (_error) => {
       // No hacemos nada si falla un frame (es normal mientras enfoca)
     };
 

@@ -13,16 +13,16 @@ function Dashboard() {
 
   const [filtro, setFiltro] = useState(""); // Para el buscador de la tabla
 
-  useEffect(() => {
-    cargarDatos();
-  }, []);
-
   const cargarDatos = () => {
     fetch(`${API_URL}/dashboard`)
       .then(res => res.json())
       .then(data => setDatos(data))
       .catch(err => console.error("Error:", err));
   };
+
+  useEffect(() => {
+    cargarDatos();
+  }, []);
 
   const dataGrafica = [
     { name: 'Almacén', valor: datos.porArea.ALMACEN, color: '#3498db' },

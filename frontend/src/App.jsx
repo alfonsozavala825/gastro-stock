@@ -7,15 +7,10 @@ import Login from './components/Login';
 import Historico from './components/Historico';
 
 function App() {
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
   const [vistaActual, setVistaActual] = useState('DASHBOARD');
   // Nuevo Estado: Tema (leemos del localStorage o por defecto 'light')
   const [tema, setTema] = useState(localStorage.getItem('tema') || 'light');
-
-  useEffect(() => {
-    const tokenGuardado = localStorage.getItem('token');
-    if (tokenGuardado) setToken(tokenGuardado);
-  }, []);
 
   // --- EFECTO CAMBIO DE TEMA ---
   useEffect(() => {

@@ -30,7 +30,7 @@ function Login({ alIniciarSesion }) {
       } else {
         setError(data.mensaje || 'Error al entrar');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Error de conexión con el servidor');
     }
   };

@@ -39,7 +39,7 @@ function ModalAgregar({ area, cerrarModal, alGuardar }) {
         alert("Producto no encontrado en el catálogo.");
         setUsandoCamara(false);
       }
-    } catch (e) {
+    } catch (_e) {
       alert("Código QR no válido para este sistema.");
       setUsandoCamara(false);
     }
@@ -49,7 +49,7 @@ function ModalAgregar({ area, cerrarModal, alGuardar }) {
     e.preventDefault();
     if (!seleccion || !cantidad) return alert("Faltan datos");
 
-    const respuesta = await fetch('http://localhost:5000/api/inventario/agregar', {
+    const respuesta = await fetch(`${API_URL}/inventario/agregar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

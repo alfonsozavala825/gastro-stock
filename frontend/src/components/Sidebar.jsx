@@ -2,6 +2,22 @@ import React, { useState, useEffect } from 'react';
 // Importamos iconos para el menú
 import { FaChartPie, FaBox, FaHistory, FaUtensils, FaLeaf, FaStore, FaClipboardList, FaBars, FaChevronLeft } from 'react-icons/fa';
 
+// Función auxiliar para renderizar botones con icono
+const BotonMenu = ({ vista, icono, etiqueta, cambiarVista, btnMenuStyle, abierto }) => (
+  <button
+    onClick={() => cambiarVista(vista)}
+    style={btnMenuStyle}
+    className="btn-hover" // Clase para efecto hover (opcional)
+    title={etiqueta} // Muestra el nombre al pasar el mouse si está cerrado
+  >
+    <span style={{ fontSize: '1.2em', minWidth: '25px' }}>{icono}</span>
+    {/* Si está abierto, mostramos el texto. Si no, lo ocultamos */}
+    <span style={{ opacity: abierto ? 1 : 0, transition: 'opacity 0.2s', marginLeft: '10px' }}>
+      {etiqueta}
+    </span>
+  </button>
+);
+
 function Sidebar({ cambiarVista, onLogout, temaActual, toggleTema }) {
   // Estado: ¿Está abierta la barra?
   // Truco: Si la pantalla es menor a 768px (celular), inicia cerrada (false). Si es PC, inicia abierta (true).
@@ -50,22 +66,6 @@ function Sidebar({ cambiarVista, onLogout, temaActual, toggleTema }) {
     transition: 'background 0.2s'
   };
 
-  // Función auxiliar para renderizar botones con icono
-  const BotonMenu = ({ vista, icono, etiqueta }) => (
-    <button 
-      onClick={() => cambiarVista(vista)}
-      style={btnMenuStyle}
-      className="btn-hover" // Clase para efecto hover (opcional)
-      title={etiqueta} // Muestra el nombre al pasar el mouse si está cerrado
-    >
-      <span style={{ fontSize: '1.2em', minWidth: '25px' }}>{icono}</span>
-      {/* Si está abierto, mostramos el texto. Si no, lo ocultamos */}
-      <span style={{ opacity: abierto ? 1 : 0, transition: 'opacity 0.2s', marginLeft: '10px' }}>
-        {etiqueta}
-      </span>
-    </button>
-  );
-
   return (
     <div className="sidebar" style={sidebarStyle}>
       
@@ -83,16 +83,16 @@ function Sidebar({ cambiarVista, onLogout, temaActual, toggleTema }) {
       
       {/* MENÚ DE NAVEGACIÓN */}
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <BotonMenu vista="DASHBOARD" icono={<FaChartPie />} etiqueta="Dashboard" />
-        <BotonMenu vista="ALMACEN" icono={<FaBox />} etiqueta="Almacén" />
-        <BotonMenu vista="COCINA" icono={<FaUtensils />} etiqueta="Cocina" />
-        <BotonMenu vista="ENSALADA" icono={<FaLeaf />} etiqueta="Ensalada" />
-        <BotonMenu vista="ISLA" icono={<FaStore />} etiqueta="Isla" />
-        <BotonMenu vista="HISTORICO" icono={<FaHistory />} etiqueta="Historial" />
+        <BotonMenu vista="DASHBOARD" icono={<FaChartPie />} etiqueta="Dashboard" cambiarVista={cambiarVista} btnMenuStyle={btnMenuStyle} abierto={abierto} />
+        <BotonMenu vista="ALMACEN" icono={<FaBox />} etiqueta="Almacén" cambiarVista={cambiarVista} btnMenuStyle={btnMenuStyle} abierto={abierto} />
+        <BotonMenu vista="COCINA" icono={<FaUtensils />} etiqueta="Cocina" cambiarVista={cambiarVista} btnMenuStyle={btnMenuStyle} abierto={abierto} />
+        <BotonMenu vista="ENSALADA" icono={<FaLeaf />} etiqueta="Ensalada" cambiarVista={cambiarVista} btnMenuStyle={btnMenuStyle} abierto={abierto} />
+        <BotonMenu vista="ISLA" icono={<FaStore />} etiqueta="Isla" cambiarVista={cambiarVista} btnMenuStyle={btnMenuStyle} abierto={abierto} />
+        <BotonMenu vista="HISTORICO" icono={<FaHistory />} etiqueta="Historial" cambiarVista={cambiarVista} btnMenuStyle={btnMenuStyle} abierto={abierto} />
         
         <hr style={{ width: '100%', borderColor: 'var(--border-color)', margin: '10px 0' }} />
         
-        <BotonMenu vista="INGREDIENTES" icono={<FaClipboardList />} etiqueta="Configuración" />
+        <BotonMenu vista="INGREDIENTES" icono={<FaClipboardList />} etiqueta="Configuración" cambiarVista={cambiarVista} btnMenuStyle={btnMenuStyle} abierto={abierto} />
       </div>
 
       {/* PIE DE PÁGINA (TEMA Y SALIR) */}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import ModalAgregar from './ModalAgregar';
 import API_URL from '../config'
 
@@ -6,27 +6,29 @@ function ListaInventario({ area }) {
   const [productos, setProductos] = useState([]);
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  const cargarDatos = () => {
+  const cargarDatos = useCallback(() => {
     if (area === 'DASHBOARD' || area === 'INGREDIENTES') return;
     fetch(`${API_URL}/listainventario/${area}`)
       .then(res => res.json())
       .then(data => setProductos(data))
       .catch(err => console.error("Error:", err));
-  };
+  }, [area]);
 
-  useEffect(() => { cargarDatos(); }, [area]);
+  useEffect(() => {
+    cargarDatos();
+  }, [cargarDatos]);
 
   // --- ACCIONES ---
   const eliminarItem = async (id) => {
     if(!confirm("¿Eliminar este registro del inventario?")) return;
-    await fetch(`http://localhost:5000/api/inventario/${id}`, { method: 'DELETE' });
+    await fetch(`${API_URL}/inventario/${id}`, { method: 'DELETE' });
     cargarDatos();
   };
 
   const editarCantidad = async (item) => {
     const nuevaCantidad = prompt(`Nueva cantidad para ${item.ingrediente?.nombre}:`, item.cantidad);
     if (nuevaCantidad !== null && !isNaN(nuevaCantidad)) {
-      await fetch(`http://localhost:5000/api/inventario/${item._id}`, {
+      await fetch(`${API_URL}/inventario/${item._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cantidad: nuevaCantidad })

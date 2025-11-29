@@ -91,7 +91,7 @@ router.delete('/:id', async (req, res) => {
 // --- RUTAS DE LECTURA (GET) ---
 
 // Reporte Dashboard
-router.get('/dashboard-total', async (req, res) => {
+router.get('/dashboard', async (req, res) => {
   try {
     const todo = await Inventario.find().populate('ingrediente');
     const granTotal = todo.reduce((acc, item) => acc + item.valorTotal, 0);

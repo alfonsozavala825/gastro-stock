@@ -14,14 +14,14 @@ function Ingredientes() {
     nombre: '', detalle: '', unidad: 'PIEZA', costo: ''
   });
 
-  useEffect(() => { cargarIngredientes(); }, []);
-
   const cargarIngredientes = () => {
     fetch(`${API_URL}/ingredientes`)
       .then(res => res.json())
       .then(data => setLista(data))
       .catch(err => console.error("Error:", err));
   };
+
+  useEffect(() => { cargarIngredientes(); }, []);
 
   const handleChange = (e) => setFormulario({ ...formulario, [e.target.name]: e.target.value });
 
@@ -34,7 +34,7 @@ function Ingredientes() {
 
     setCargando(true);
     try {
-      const res = await fetch('http://localhost:5000/api/ingredientes/importar', {
+      const res = await fetch(`${API_URL}/ingredientes/importar`, {
         method: 'POST',
         body: formData // No ponemos Header Content-Type, el navegador lo pone solo
       });
@@ -43,7 +43,7 @@ function Ingredientes() {
       alert(data.mensaje);
       cargarIngredientes(); // Recargamos la lista
       setArchivo(null);     // Limpiamos
-    } catch (error) {
+    } catch (_error) {
       alert("Error al subir archivo");
     }
     setCargando(false);
@@ -55,8 +55,8 @@ function Ingredientes() {
     e.preventDefault();
     const metodo = modoEdicion ? 'PUT' : 'POST';
     const url = modoEdicion 
-      ? `http://localhost:5000/api/ingredientes/${idEditando}`
-      : 'http://localhost:5000/api/ingredientes';
+      ? `${API_URL}/ingredientes/${idEditando}`
+      : `${API_URL}/ingredientes`;
 
     const res = await fetch(url, {
       method: metodo,
@@ -73,7 +73,7 @@ function Ingredientes() {
 
   const eliminar = async (id) => {
     if(confirm("¿Borrar?")) {
-      await fetch(`http://localhost:5000/api/ingredientes/${id}`, { method: 'DELETE' });
+      await fetch(`${API_URL}/ingredientes/${id}`, { method: 'DELETE' });
       cargarIngredientes();
     }
   };
