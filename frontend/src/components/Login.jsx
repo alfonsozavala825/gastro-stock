@@ -27,9 +27,11 @@ function Login({ alIniciarSesion }) {
         setError(data.mensaje || 'Error al entrar');
       }
     }
-    catch (err) {
-      setError('Error de conexión con el servidor');
-    }
+     catch (err) {
+      // 💡 Recomendación: Imprime el error completo en la consola
+      console.error("Error de red/petición:", err); 
+      setError('Error de conexión con el servidor');
+    }
   };
 
   return (

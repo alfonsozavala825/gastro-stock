@@ -5,6 +5,8 @@ import Dashboard from './components/Dashboard';
 import Ingredientes from './components/Ingredientes';
 import Login from './components/Login';
 import Historico from './components/Historico';
+import {  } from './config';
+
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
