@@ -1,28 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FaBoxOpen, FaCube, FaSearch, FaPrint, FaFileExcel, FaInbox } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import API_URL from '../config'
+import useDashboard from '../hooks/useDashboard'; // <-- Importar el nuevo hook
 
 function Dashboard() {
-  const [datos, setDatos] = useState({ 
-    totalDinero: 0, 
-    totalProductos: 0,
-    porArea: { ALMACEN: 0, COCINA: 0, ENSALADA: 0, ISLA: 0 },
-    inventarioGlobal: [] // <--- Lista vacía inicial
-  });
-
+  const { dashboardData, isLoading, error } = useDashboard(); // <-- Usar el hook
   const [filtro, setFiltro] = useState(""); // Para el buscador de la tabla
 
-  const cargarDatos = () => {
-    fetch(`${API_URL}/dashboard`)
-      .then(res => res.json())
-      .then(data => setDatos(data))
-      .catch(err => console.error("Error:", err));
-  };
-
-  useEffect(() => {
-    cargarDatos();
-  }, []);
+  // Los datos ahora vienen del hook: dashboardData
+  const datos = dashboardData;
 
   const dataGrafica = [
     { name: 'Almacén', valor: datos.porArea.ALMACEN, color: '#3498db' },
@@ -34,7 +20,6 @@ function Dashboard() {
   const imprimir = () => window.print();
 
   const descargarExcel = () => {
-    // Generamos un Excel con la tabla detallada
     const filas = [["Ingrediente", "Ubicacion", "Cantidad", "Unidad", "Valor Total"]];
     datos.inventarioGlobal.forEach(item => {
       filas.push([
@@ -59,6 +44,9 @@ function Dashboard() {
   const productosFiltrados = datos.inventarioGlobal.filter(item => 
     item.ingrediente?.nombre.toLowerCase().includes(filtro.toLowerCase())
   );
+  
+  if (isLoading) return <p>Cargando dashboard...</p>;
+  if (error) return <p>Error al cargar el dashboard: {error}</p>;
 
   return (
     <div>
