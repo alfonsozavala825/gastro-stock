@@ -12,6 +12,7 @@
   "dependencies": {
     "helmet": "^8.1.0",
     "html5-qrcode": "^2.3.8",
+    "mongodb": "^7.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",

@@ -4,8 +4,9 @@ const Usuario = require('../models/Usuario');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Clave secreta para firmar los tokens (En producción esto va en .env)
-const JWT_SECRET = 'gastro_stock_secreto_super_seguro';
+// Clave secreta para firmar los tokens (Leer siempre de las variables de entorno)
+// Asegúrate de que esta variable exista en Render como JWT_SECRET
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // RUTA LOGIN
 router.post('/login', async (req, res) => {
@@ -40,21 +41,26 @@ router.post('/login', async (req, res) => {
 
 // RUTA ESPECIAL: CREAR ADMIN INICIAL (Solo corre una vez)
 router.post('/setup-admin', async (req, res) => {
-  const existe = await Usuario.findOne({ email: 'admin@admin.com' });
-  if (existe) return res.json({ mensaje: 'El admin ya existe' });
+  try { // <--- Agregar try...catch
+    const existe = await Usuario.findOne({ email: 'admin@admin.com' });
+    if (existe) return res.json({ mensaje: 'El admin ya existe' });
 
-  // Encriptamos la contraseña "admin1234"
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash('admin1234', salt);
+    // Encriptamos la contraseña "admin1234"
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash('admin1234', salt);
 
-  const admin = new Usuario({
-    email: 'admin@admin.com',
-    password: passwordHash,
-    nombre: 'Administrador'
-  });
+    const admin = new Usuario({
+      email: 'admin@admin.com',
+      password: passwordHash,
+      nombre: 'Administrador'
+    });
 
-  await admin.save();
-  res.json({ mensaje: 'Admin creado: admin@admin.com / admin1234' });
+    await admin.save();
+    res.json({ mensaje: 'Admin creado: admin@admin.com / admin1234' });
+  } catch (error) {
+    console.error("Error al crear admin inicial:", error);
+    res.status(500).json({ mensaje: 'Error al inicializar el admin' });
+  }
 });
 
 module.exports = router;

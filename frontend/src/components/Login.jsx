@@ -11,11 +11,14 @@ function Login({ alIniciarSesion }) {
     setError('');
 
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+          // La URL se construye correctamente con la variable API_URL
+          const res = await fetch(`${API_URL}/auth/login`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          // La lógica para manejar 'res.ok' y 'catch' debe ir aquí...
+          // ...
 
       const data = await res.json();
 
