@@ -4,8 +4,12 @@ const Inventario = require('../models/Inventario');
 const Ingrediente = require('../models/Ingrediente');
 const Historico = require('../models/Historico'); // <--- Importamos el nuevo modelo
 
+const mongoose = require('mongoose');
+const { auth } = require('../middleware/auth');
+
 // --- FUNCIÓN AUXILIAR PARA REGISTRAR HISTORIA ---
-async function registrarHistoria(ingredienteId, area, tipo, cantAnt, cantNueva) {
+// Ahora acepta la sesión como argumento
+async function registrarHistoria(ingredienteId, area, tipo, cantAnt, cantNueva, usuarioId, session) {
   try {
     const diferencia = cantNueva - cantAnt;
     await new Historico({
@@ -14,84 +18,119 @@ async function registrarHistoria(ingredienteId, area, tipo, cantAnt, cantNueva) 
       tipoMovimiento: tipo,
       cantidadAnterior: cantAnt,
       cantidadNueva: cantNueva,
-      diferencia
-    }).save();
+      diferencia,
+      responsable: usuarioId
+    }).save({ session }); // <-- Usamos la sesión
   } catch (error) {
-    console.error("Error guardando histórico:", error);
+    // El error se manejará en el catch del controlador que usa la transacción
+    throw error;
   }
 }
 
 // 1. AGREGAR stock (POST) -> Registra 'ENTRADA'
-router.post('/agregar', async (req, res) => {
+router.post('/agregar', auth, async (req, res) => {
   const { ingrediente, area, cantidad } = req.body;
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const infoIng = await Ingrediente.findById(ingrediente);
-    if (!infoIng) return res.status(404).json({ mensaje: 'Ingrediente no existe' });
-
-    let item = await Inventario.findOne({ ingrediente, area });
-    let cantidadAnterior = 0;
-
-    if (item) {
-      cantidadAnterior = item.cantidad;
-      item.cantidad += parseFloat(cantidad);
-    } else {
-      item = new Inventario({ ingrediente, area, cantidad: parseFloat(cantidad) });
+    const cantidadNum = parseFloat(cantidad);
+    if (isNaN(cantidadNum) || cantidadNum <= 0) {
+      throw new Error('La cantidad debe ser un número positivo.');
     }
 
-    item.valorTotal = item.cantidad * infoIng.costo;
-    const resultado = await item.save();
+    const infoIng = await Ingrediente.findById(ingrediente).session(session);
+    if (!infoIng) return res.status(404).json({ mensaje: 'Ingrediente no existe' });
 
-    // --- GUARDAR HISTÓRICO ---
-    await registrarHistoria(ingrediente, area, 'ENTRADA', cantidadAnterior, item.cantidad);
+    const itemPrevio = await Inventario.findOne({ ingrediente, area }).session(session);
+    const cantidadAnterior = itemPrevio ? itemPrevio.cantidad : 0;
+    
+    const itemActualizado = await Inventario.findOneAndUpdate(
+      { ingrediente, area },
+      { 
+        $inc: { cantidad: cantidadNum },
+        $set: { valorTotal: (cantidadAnterior + cantidadNum) * infoIng.costo }
+      },
+      { new: true, upsert: true, session: session }
+    );
 
-    res.json(resultado);
+    await registrarHistoria(ingrediente, area, 'ENTRADA', cantidadAnterior, itemActualizado.cantidad, req.user.id, session);
+
+    await session.commitTransaction();
+    res.json(itemActualizado);
+
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error', error: error.message });
+    await session.abortTransaction();
+    res.status(500).json({ mensaje: 'Error al agregar stock', error: error.message });
+  } finally {
+    session.endSession();
   }
 });
 
 // 2. ACTUALIZAR manual (PUT) -> Registra 'AJUSTE_MANUAL'
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  
   try {
-    const item = await Inventario.findById(req.params.id).populate('ingrediente');
-    if (!item) return res.status(404).json({ mensaje: 'No encontrado' });
-
-    const cantidadAnterior = item.cantidad;
     const nuevaCantidad = parseFloat(req.body.cantidad);
+     if (isNaN(nuevaCantidad) || nuevaCantidad < 0) {
+      throw new Error('La cantidad debe ser un número válido y no negativo.');
+    }
 
-    item.cantidad = nuevaCantidad;
-    item.valorTotal = item.cantidad * item.ingrediente.costo;
-    await item.save();
+    const itemPrevio = await Inventario.findById(req.params.id).populate('ingrediente').session(session);
+    if (!itemPrevio) return res.status(404).json({ mensaje: 'No encontrado' });
 
-    // --- GUARDAR HISTÓRICO ---
-    await registrarHistoria(item.ingrediente._id, item.area, 'AJUSTE_MANUAL', cantidadAnterior, item.cantidad);
+    const cantidadAnterior = itemPrevio.cantidad;
 
-    res.json(item);
+    const itemActualizado = await Inventario.findByIdAndUpdate(
+      req.params.id,
+      {
+        cantidad: nuevaCantidad,
+        valorTotal: nuevaCantidad * itemPrevio.ingrediente.costo
+      },
+      { new: true, session: session }
+    );
+
+    await registrarHistoria(itemActualizado.ingrediente, itemActualizado.area, 'AJUSTE_MANUAL', cantidadAnterior, itemActualizado.cantidad, req.user.id, session);
+    
+    await session.commitTransaction();
+    res.json(itemActualizado);
+
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error update' });
+    await session.abortTransaction();
+    res.status(500).json({ mensaje: 'Error al actualizar', error: error.message });
+  } finally {
+    session.endSession();
   }
 });
 
+
 // 3. ELIMINAR (DELETE) -> Registra 'ELIMINADO'
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
-    const item = await Inventario.findById(req.params.id);
+    const item = await Inventario.findById(req.params.id).session(session);
     if (item) {
-      // Guardamos la historia antes de borrarlo
-      await registrarHistoria(item.ingrediente, item.area, 'ELIMINADO', item.cantidad, 0);
-      
-      await Inventario.findByIdAndDelete(req.params.id);
+      await registrarHistoria(item.ingrediente, item.area, 'ELIMINADO', item.cantidad, 0, req.user.id, session);
+      await Inventario.findByIdAndDelete(req.params.id).session(session);
     }
+    
+    await session.commitTransaction();
     res.json({ mensaje: 'Eliminado' });
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error delete' });
+    await session.abortTransaction();
+    res.status(500).json({ mensaje: 'Error al eliminar', error: error.message });
+  } finally {
+    session.endSession();
   }
 });
 
 // --- RUTAS DE LECTURA (GET) ---
 
 // Reporte Dashboard
-router.get('/dashboard', async (req, res) => {
+router.get('/dashboard', auth, async (req, res) => {
   try {
     const todo = await Inventario.find().populate('ingrediente');
     const granTotal = todo.reduce((acc, item) => acc + item.valorTotal, 0);
@@ -106,7 +145,7 @@ router.get('/dashboard', async (req, res) => {
 });
 
 // Leer por Área
-router.get('/:area', async (req, res) => {
+router.get('/:area', auth, async (req, res) => {
   try {
     const lista = await Inventario.find({ area: req.params.area.toUpperCase() }).populate('ingrediente');
     res.json(lista);

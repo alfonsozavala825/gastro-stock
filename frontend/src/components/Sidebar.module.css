@@ -1,0 +1,136 @@
+.sidebar {
+  padding: 20px 10px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  transition: width 0.3s ease;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  background: var(--bg-sidebar); /* Use CSS variable */
+}
+
+.sidebarAbierto {
+  width: 250px;
+}
+
+.sidebarCerrado {
+  width: 70px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-left: 5px;
+}
+
+.headerAbierto {
+  justify-content: space-between;
+}
+
+.headerCerrado {
+  justify-content: center;
+}
+
+.title {
+  margin: 0;
+  color: #3498db;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 1.2em;
+}
+
+.navMenu {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.btnMenu {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  text-align: left;
+  background: transparent;
+  color: var(--text-primary);
+  border: none;
+  border-radius: 8px;
+  width: 100%;
+  font-size: 1em;
+  white-space: nowrap;
+  transition: background 0.2s;
+  text-decoration: none; /* For Link component */
+}
+
+.btnMenu:hover {
+  background: var(--bg-hover); /* Assuming a hover background variable */
+}
+
+.btnMenuIcon {
+  font-size: 1.2em;
+  min-width: 25px;
+}
+
+.btnMenuEtiquetaAbierto {
+  opacity: 1;
+  transition: opacity 0.2s;
+  margin-left: 10px;
+}
+
+.btnMenuEtiquetaCerrado {
+  opacity: 0;
+  transition: opacity 0.2s;
+  margin-left: 10px;
+}
+
+.divider {
+  width: 100%;
+  border-color: var(--border-color);
+  margin: 10px 0;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.themeButton {
+  justify-content: flex-start;
+}
+
+.themeButtonCerrado {
+  justify-content: center;
+}
+
+.logoutButton {
+  background: #ff4d4d22;
+  color: #ff4d4d;
+}
+
+.logoutButtonAbierto {
+  justify-content: flex-start;
+}
+
+.logoutButtonCerrado {
+  justify-content: center;
+}
+
+.footerButtonIcon {
+  font-size: 1.2em;
+}
+
+.footerButtonText {
+  font-weight: bold;
+}

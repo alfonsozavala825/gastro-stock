@@ -1,0 +1,77 @@
+.card {
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+}
+
+.error {
+  color: red;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text-primary);
+}
+
+.tableHeader {
+  border-bottom: 2px solid var(--border-color);
+  text-align: left;
+}
+
+.th {
+  padding: 10px;
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.td {
+  padding: 10px;
+}
+
+.tdSmall {
+  font-size: 0.85em;
+}
+
+.tdBold {
+  font-weight: bold;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.statusEntrada {
+  background: #2ecc7133;
+  color: #27ae60;
+}
+
+.statusEliminado {
+  background: #e74c3c33;
+  color: #c0392b;
+}
+
+.statusOtro {
+  background: #f1c40f33;
+  color: #d35400;
+}
+
+.cambioDetalle {
+  margin-left: 5px;
+  font-size: 0.8em;
+  color: gray;
+}

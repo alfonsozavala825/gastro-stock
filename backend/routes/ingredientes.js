@@ -3,7 +3,7 @@ const router = express.Router();
 const Ingrediente = require('../models/Ingrediente');
 const QRCode = require('qrcode');
 const multer = require('multer');
-const xlsx = require('xlsx');
+const ExcelJS = require('exceljs');
 
 // Guardamos en memoria RAM para leer rápido
 const upload = multer({ storage: multer.memoryStorage() });
@@ -31,15 +31,37 @@ const normalizarUnidad = (textoExcel) => {
 };
 // --------------------------------------
 
+const { auth, admin } = require('../middleware/auth');
+
 // RUTA IMPORTAR EXCEL (POST)
-router.post('/importar', upload.single('archivoExcel'), async (req, res) => {
+router.post('/importar', [admin, upload.single('archivoExcel')], async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ mensaje: 'No subiste ningún archivo' });
 
-    const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const datos = xlsx.utils.sheet_to_json(sheet);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(req.file.buffer);
+    const sheet = workbook.worksheets[0];
+    
+    // Extraer encabezados de la primera fila
+    const header = sheet.getRow(1).values.map(h => h.toString().trim());
+
+    const datos = [];
+
+    // Iterar sobre cada fila (a partir de la segunda)
+    sheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 1) {
+            let rowData = {};
+            row.values.forEach((value, index) => {
+                // Usamos el encabezado limpio para la clave del objeto
+                const key = header[index-1]; // El índice de `values` es 1-based
+                if (key) {
+                   rowData[key] = value;
+                }
+            });
+            datos.push(rowData);
+        }
+    });
+
 
     let contador = 0;
     
@@ -84,7 +106,7 @@ router.post('/importar', upload.single('archivoExcel'), async (req, res) => {
 });
 
 // RUTAS CRUD STANDARD
-router.post('/', async (req, res) => {
+router.post('/', admin, async (req, res) => {
   try {
     const nuevoIngrediente = new Ingrediente(req.body);
     const qrData = JSON.stringify({ id: nuevoIngrediente._id, nombre: nuevoIngrediente.nombre });
@@ -96,7 +118,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const ingredientes = await Ingrediente.find(); 
     res.json(ingredientes);
@@ -105,7 +127,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', admin, async (req, res) => {
   try {
     const actualizado = await Ingrediente.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(actualizado);
@@ -114,7 +136,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', admin, async (req, res) => {
   try {
     await Ingrediente.findByIdAndDelete(req.params.id);
     res.json({ mensaje: 'Eliminado' });

@@ -18,6 +18,10 @@ const historicoSchema = new mongoose.Schema({
   cantidadAnterior: { type: Number, default: 0 },
   cantidadNueva: { type: Number, required: true },
   diferencia: { type: Number, required: true }, // Ej: +5 o -2
+  responsable: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Usuario'
+  },
   fecha: {
     type: Date,
     default: Date.now

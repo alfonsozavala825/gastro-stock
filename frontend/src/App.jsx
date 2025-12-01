@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import ListaInventario from './components/ListaInventario';
 import Dashboard from './components/Dashboard';
 import Ingredientes from './components/Ingredientes';
 import Login from './components/Login';
 import Historico from './components/Historico';
-import {  } from './config';
+import Escaner from './components/Escaner';
+import { useAuth } from './context/AuthContext';
 
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [vistaActual, setVistaActual] = useState('DASHBOARD');
+  const { token, logout, user } = useAuth(); // Use token, logout and user from AuthContext
   // Nuevo Estado: Tema (leemos del localStorage o por defecto 'light')
   const [tema, setTema] = useState(localStorage.getItem('tema') || 'light');
 
@@ -25,20 +26,13 @@ function App() {
     setTema(prev => prev === 'light' ? 'dark' : 'light');
   };
 
-  const cerrarSesion = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    setToken(null);
-  };
-
-  if (!token) return <Login alIniciarSesion={() => setToken(localStorage.getItem('token'))} />;
+  if (!token) return <Login />; // Login component will now handle setting token via context
 
   return (
     <div style={{ display: 'flex' }}>
       {/* Pasamos la función del tema y el estado actual al Sidebar */}
       <Sidebar 
-        cambiarVista={setVistaActual} 
-        onLogout={cerrarSesion} 
+        onLogout={logout} // Use logout from AuthContext
         temaActual={tema}
         toggleTema={toggleTema}
       />
@@ -46,17 +40,23 @@ function App() {
       <div style={{ padding: '20px', flex: 1, minHeight: '100vh' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h1>Panel Principal</h1>
-          <span style={{ color: 'var(--text-secondary)' }}>Usuario: Admin</span>
+          <span style={{ color: 'var(--text-secondary)' }}>Usuario: {user ? user.nombre : 'Guest'}</span>
         </div>
         
-        {vistaActual === 'DASHBOARD' && <Dashboard />}
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/almacen" element={<ListaInventario area="ALMACEN" />} />
+          <Route path="/cocina" element={<ListaInventario area="COCINA" />} />
+          <Route path="/ensalada" element={<ListaInventario area="ENSALADA" />} />
+          <Route path="/isla" element={<ListaInventario area="ISLA" />} />
+          <Route path="/ingredientes" element={<Ingredientes />} />
+          <Route path="/historico" element={<Historico />} />
+          <Route path="/escaner" element={<Escaner />} />
 
-        {['ALMACEN', 'COCINA', 'ENSALADA', 'ISLA'].includes(vistaActual) && (
-           <ListaInventario area={vistaActual} />
-        )}
-
-        {vistaActual === 'INGREDIENTES' && <Ingredientes />}
-        {vistaActual === 'HISTORICO' && <Historico />}
+          {/* Fallback for unknown routes */}
+          <Route path="*" element={<Navigate to="/dashboard" />} />
+        </Routes>
       </div>
     </div>
   );

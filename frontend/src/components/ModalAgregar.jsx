@@ -1,40 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import Escaner from './Escaner'; // <--- Importamos la cámara
-import API_URL from '../config'
+import React, { useState } from 'react';
+import Escaner from './Escaner';
+import useIngredientes from '../hooks/useIngredientes';
+import useInventoryActions from '../hooks/useInventoryActions';
+import styles from './ModalAgregar.module.css';
 
 function ModalAgregar({ area, cerrarModal, alGuardar }) {
-  const [ingredientes, setIngredientes] = useState([]);
+  const { ingredientes, isLoading: isLoadingIngredientes, error: errorIngredientes } = useIngredientes();
+  const { addInventoryItem, isLoading: isLoadingAdd, error: errorAdd } = useInventoryActions();
+
   const [seleccion, setSeleccion] = useState('');
   const [cantidad, setCantidad] = useState('');
-  
-  // Estado para saber si mostramos la cámara o el formulario
   const [usandoCamara, setUsandoCamara] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  useEffect(() => {
-    fetch(`${API_URL}/modalagregar`) // Ajusta la URL según tu configuración
-      .then(res => res.json())
-      .then(data => setIngredientes(data))
-      .catch(err => console.error("Error cargando catálogo", err));
-  }, []);
-
-  // --- LÓGICA INTELIGENTE DE BÚSQUEDA ---
   const manejarEscaneo = (textoQR) => {
+    setErrorMessage('');
     try {
-      // El QR es un texto JSON, intentamos leerlo
       const datos = JSON.parse(textoQR);
       
-      // Buscamos coincidencia en nuestra lista
-      // 1. Intentamos por ID (QR Manual)
-      // 2. Intentamos por Nombre (QR Excel)
       const encontrado = ingredientes.find(ing => 
         ing._id === datos.id || 
         ing.nombre.toLowerCase() === datos.nombre.toLowerCase()
       );
 
       if (encontrado) {
-        setSeleccion(encontrado._id); // Seleccionamos el producto en el menú
+        setSeleccion(encontrado._id);
         alert(`¡Encontrado: ${encontrado.nombre}!`);
-        setUsandoCamara(false); // Cerramos cámara
+        setUsandoCamara(false);
       } else {
         alert("Producto no encontrado en el catálogo.");
         setUsandoCamara(false);
@@ -47,61 +39,55 @@ function ModalAgregar({ area, cerrarModal, alGuardar }) {
 
   const manejarEnvio = async (e) => {
     e.preventDefault();
-    if (!seleccion || !cantidad) return alert("Faltan datos");
+    setErrorMessage('');
+    if (!seleccion || !cantidad) {
+      setErrorMessage("Faltan datos");
+      return;
+    }
 
-    const respuesta = await fetch(`${API_URL}/inventario/agregar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ingrediente: seleccion,
-        area: area,
-        cantidad: parseFloat(cantidad)
-      })
-    });
-
-    if (respuesta.ok) {
+    const result = await addInventoryItem(seleccion, area, cantidad);
+    if (result.success) {
       alGuardar();
       cerrarModal();
     } else {
-      alert("Error al guardar ❌");
+      setErrorMessage(result.message || "Error al guardar ❌");
     }
   };
 
+  if (isLoadingIngredientes) return <p>Cargando ingredientes...</p>;
+  if (errorIngredientes) return <p className={styles.error}>Error: {errorIngredientes}</p>;
+
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1000,
-      backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center'
-    }}>
-      <div className="card" style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '400px', position: 'relative' }}>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
         
-        {/* Botón X para cerrar */}
-        <button onClick={cerrarModal} style={{ position: 'absolute', top: 10, right: 10, background: 'transparent', border: 'none', fontSize: '1.5em', cursor: 'pointer', color: 'var(--text-primary)' }}>✖️</button>
+        <button onClick={cerrarModal} className={styles.closeButton}>✖️</button>
 
-        <h3 style={{ marginTop: 0 }}>Agregar a {area}</h3>
+        <h3 className={styles.title}>Agregar a {area}</h3>
+        {errorMessage && <p className={styles.error}>{errorMessage}</p>}
+        {errorAdd && <p className={styles.error}>{errorAdd}</p>}
 
-        {/* DECISIÓN: ¿CÁMARA O FORMULARIO? */}
         {usandoCamara ? (
           <div>
              <Escaner alEscanear={manejarEscaneo} />
-             <button onClick={() => setUsandoCamara(false)} style={{ width: '100%', marginTop: '10px', padding: '10px', background: '#e74c3c', color: 'white', border: 'none' }}>Cancelar Cámara</button>
+             <button onClick={() => setUsandoCamara(false)} className={styles.cancelScanButton}>Cancelar Cámara</button>
           </div>
         ) : (
           <form onSubmit={manejarEnvio}>
             
-            {/* BOTÓN GRANDE PARA ACTIVAR CÁMARA */}
             <button 
               type="button" 
               onClick={() => setUsandoCamara(true)}
-              style={{ width: '100%', padding: '15px', marginBottom: '20px', background: '#8e44ad', color: 'white', border: 'none', borderRadius: '5px', fontSize: '1.1em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+              className={styles.scanButton}
             >
               📷 Escanear Producto
             </button>
 
-            <label style={{display:'block', marginBottom:'5px'}}>O selecciona manual:</label>
+            <label className={styles.label}>O selecciona manual:</label>
             <select 
               value={seleccion} 
               onChange={e => setSeleccion(e.target.value)}
-              style={{ width: '100%', marginBottom: '15px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+              className={styles.select}
               required
             >
               <option value="">-- Buscar en lista --</option>
@@ -112,20 +98,20 @@ function ModalAgregar({ area, cerrarModal, alGuardar }) {
               ))}
             </select>
 
-            <label style={{display:'block', marginBottom:'5px'}}>Cantidad a sumar:</label>
+            <label className={styles.label}>Cantidad a sumar:</label>
             <input 
               type="number" 
               step="0.01"
               value={cantidad}
               onChange={e => setCantidad(e.target.value)}
-              style={{ width: '100%', marginBottom: '20px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+              className={styles.input}
               required
               placeholder="0.00"
             />
 
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button type="submit" style={{ flex: 1, padding: '12px', background: '#2ecc71', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>GUARDAR</button>
-              <button type="button" onClick={cerrarModal} style={{ flex: 1, padding: '12px', background: '#95a5a6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>CANCELAR</button>
+            <div className={styles.buttonGroup}>
+              <button type="submit" className={styles.submitButton} disabled={isLoadingAdd}>GUARDAR</button>
+              <button type="button" onClick={cerrarModal} className={styles.cancelButton}>CANCELAR</button>
             </div>
           </form>
         )}

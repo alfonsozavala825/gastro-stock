@@ -1,60 +1,63 @@
-import React, { useEffect, useState } from 'react';
-import API_URL from '../config'
+import React from 'react';
+import useHistorico from '../hooks/useHistorico';
+import styles from './Historico.module.css'; // Import the CSS module
 
 function Historico() {
-  const [movimientos, setMovimientos] = useState([]);
+  const { movimientos, isLoading, error } = useHistorico();
 
-  useEffect(() => {
-    fetch(`${API_URL}/historico`)
-      .then(res => res.json())
-      .then(data => setMovimientos(data))
-      .catch(err => console.error(err));
-  }, []);
-
-  // Función para formatear fecha bonita
   const formatearFecha = (fecha) => {
     return new Date(fecha).toLocaleString('es-MX');
   };
 
+  const getStatusClass = (tipoMovimiento) => {
+    switch (tipoMovimiento) {
+      case 'ENTRADA':
+        return styles.statusEntrada;
+      case 'ELIMINADO':
+        return styles.statusEliminado;
+      default:
+        return styles.statusOtro;
+    }
+  };
+
+  if (isLoading) return <p>Cargando historial...</p>;
+  if (error) return <p className={styles.error}>Error: {error}</p>;
+
   return (
-    <div className="card" style={{ padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)' }}>
+    <div className={styles.card}>
       <h3>📜 Historial de Movimientos</h3>
-      <p style={{ color: 'var(--text-secondary)' }}>Últimas transacciones registradas en el sistema.</p>
+      <p className={styles.subtitle}>Últimas transacciones registradas en el sistema.</p>
 
       {movimientos.length === 0 ? (
         <p>No hay movimientos registrados aún.</p>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', color: 'var(--text-primary)' }}>
+        <div className={styles.tableContainer}>
+          <table className={styles.table}>
             <thead>
-              <tr style={{ borderBottom: '2px solid var(--border-color)', textAlign: 'left' }}>
-                <th style={{ padding: '10px' }}>Fecha</th>
-                <th style={{ padding: '10px' }}>Área</th>
-                <th style={{ padding: '10px' }}>Producto</th>
-                <th style={{ padding: '10px' }}>Acción</th>
-                <th style={{ padding: '10px' }}>Cambio</th>
+              <tr className={styles.tableHeader}>
+                <th className={styles.th}>Fecha</th>
+                <th className={styles.th}>Área</th>
+                <th className={styles.th}>Producto</th>
+                <th className={styles.th}>Acción</th>
+                <th className={styles.th}>Cambio</th>
               </tr>
             </thead>
             <tbody>
               {movimientos.map((m) => (
-                <tr key={m._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: '10px', fontSize: '0.85em' }}>{formatearFecha(m.fecha)}</td>
-                  <td style={{ padding: '10px' }}>{m.area}</td>
-                  <td style={{ padding: '10px', fontWeight: 'bold' }}>
+                <tr key={m._id} className={styles.tableRow}>
+                  <td className={`${styles.td} ${styles.tdSmall}`}>{formatearFecha(m.fecha)}</td>
+                  <td className={styles.td}>{m.area}</td>
+                  <td className={`${styles.td} ${styles.tdBold}`}>
                     {m.ingrediente?.nombre || 'Producto borrado'}
                   </td>
-                  <td style={{ padding: '10px' }}>
-                    <span style={{
-                      padding: '4px 8px', borderRadius: '4px', fontSize: '0.8em', fontWeight: 'bold',
-                      background: m.tipoMovimiento === 'ENTRADA' ? '#2ecc7133' : m.tipoMovimiento === 'ELIMINADO' ? '#e74c3c33' : '#f1c40f33',
-                      color: m.tipoMovimiento === 'ENTRADA' ? '#27ae60' : m.tipoMovimiento === 'ELIMINADO' ? '#c0392b' : '#d35400'
-                    }}>
+                  <td className={styles.td}>
+                    <span className={`${styles.status} ${getStatusClass(m.tipoMovimiento)}`}>
                       {m.tipoMovimiento}
                     </span>
                   </td>
-                  <td style={{ padding: '10px' }}>
+                  <td className={styles.td}>
                     {m.cantidadAnterior} ➝ <b>{m.cantidadNueva}</b>
-                    <span style={{ marginLeft: '5px', fontSize: '0.8em', color: 'gray' }}>
+                    <span className={styles.cambioDetalle}>
                        ({m.diferencia > 0 ? '+' : ''}{m.diferencia})
                     </span>
                   </td>

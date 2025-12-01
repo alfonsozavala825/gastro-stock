@@ -35,30 +35,6 @@ app.get('/', (req, res) => {
     res.send('¡Hola! El servidor del Inventario está funcionando 🚀');
 });
 
-// --- LÓGICA DE ADMIN AUTOMÁTICO ---
-const crearAdminSiNoExiste = async () => {
-  try {
-    const existe = await Usuario.findOne({ email: 'admin@admin.com' });
-    if (!existe) {
-      console.log("⚠️ No hay usuarios. Creando ADMIN por defecto...");
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash('admin1234', salt);
-      
-      await new Usuario({
-        email: 'admin@admin.com',
-        password: passwordHash,
-        nombre: 'Administrador'
-      }).save();
-      console.log("✅ Usuario Admin creado: admin@admin.com / admin1234");
-    }
-  } catch (error) {
-    console.error("Error verificando admin:", error);
-  }
-};
-
-// Ejecutamos la verificación
-crearAdminSiNoExiste();
-
 // --- ARRANCAR SERVIDOR ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
