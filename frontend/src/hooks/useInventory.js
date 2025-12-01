@@ -1,17 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 import API_URL from '../config';
 
 const useInventory = (area) => {
   const [productos, setProductos] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { token } = useAuth();
 
   const fetchInventory = useCallback(async () => {
-    if (!area || area === 'DASHBOARD' || area === 'INGREDIENTES') return;
+    if (!area || area === 'DASHBOARD' || area === 'INGREDIENTES' || !token) return;
+    
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/listainventario/${area}`);
+      const res = await fetch(`${API_URL}/inventario/${area}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (!res.ok) {
         throw new Error(`Error fetching inventory: ${res.statusText}`);
       }
@@ -23,18 +30,23 @@ const useInventory = (area) => {
     } finally {
       setIsLoading(false);
     }
-  }, [area]);
+  }, [area, token]);
 
   useEffect(() => {
     fetchInventory();
   }, [fetchInventory]);
 
   const deleteItem = async (id) => {
+    if (!token) return { success: false, message: 'No autenticado' };
+    
     setIsLoading(true);
     setError(null);
     try {
       const res = await fetch(`${API_URL}/inventario/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       if (!res.ok) {
         throw new Error(`Error deleting item: ${res.statusText}`);
@@ -51,12 +63,17 @@ const useInventory = (area) => {
   };
 
   const updateQuantity = async (id, newQuantity) => {
+    if (!token) return { success: false, message: 'No autenticado' };
+
     setIsLoading(true);
     setError(null);
     try {
       const res = await fetch(`${API_URL}/inventario/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify({ cantidad: newQuantity })
       });
       if (!res.ok) {
