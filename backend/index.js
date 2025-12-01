@@ -26,10 +26,12 @@ mongoose.connect(process.env.MONGO_URI)
 const ingredientesRoutes = require('./routes/ingredientes');
 const inventarioRoutes = require('./routes/inventario');
 const authRoutes = require('./routes/auth'); // Nueva ruta de seguridad
+const dashboardRoutes = require('./routes/dashboard');
 
 app.use('/api/ingredientes', ingredientesRoutes);
 app.use('/api/inventario', inventarioRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.get('/', (req, res) => {
     res.send('¡Hola! El servidor del Inventario está funcionando 🚀');

@@ -19,7 +19,7 @@ const useDashboard = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/inventario/dashboard`, {
+      const res = await fetch(`${API_URL}/dashboard`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
