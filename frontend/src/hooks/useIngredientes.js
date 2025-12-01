@@ -21,13 +21,15 @@ const useIngredientes = () => {
       });
       
       if (!res.ok) {
-        throw new Error(`Error fetching ingredients: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        const message = errorData.mensaje || res.statusText;
+        throw new Error(`Error fetching ingredients: ${message}`);
       }
       const data = await res.json();
       setIngredientes(data);
     } catch (err) => {
       console.error("Error cargando catálogo de ingredientes:", err);
-      setError('Error al cargar los ingredientes.');
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }

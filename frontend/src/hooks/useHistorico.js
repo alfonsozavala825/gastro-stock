@@ -20,16 +20,16 @@ const useHistorico = () => {
         }
       });
       if (!res.ok) {
-        throw new Error(`Error fetching historical data: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        const message = errorData.mensaje || res.statusText;
+        throw new Error(`Error fetching historical data: ${message}`);
       }
       const data = await res.json();
       setMovimientos(data);
-    } catch (err) {
+    } catch (err) => {
       console.error("Error al cargar histórico:", err);
-      setError('Error al cargar el histórico.');
+      setError(err.message);
     } finally {
-      setIsLoading(false);
-    }
   }, [token]);
 
   useEffect(() => {

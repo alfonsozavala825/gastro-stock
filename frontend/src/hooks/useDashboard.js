@@ -26,14 +26,16 @@ const useDashboard = () => {
       });
 
       if (!res.ok) {
-        throw new Error(`Error fetching dashboard data: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({})); // Intenta parsear JSON, si falla, devuelve objeto vacío
+        const message = errorData.mensaje || res.statusText;
+        throw new Error(`Error fetching dashboard data: ${message}`);
       }
 
       const data = await res.json();
       setDashboardData(data);
     } catch (err) {
       console.error('Error loading dashboard data:', err);
-      setError('Error al cargar los datos del dashboard.');
+      setError(err.message); // <-- Mostrar el mensaje de error real
     } finally {
       setIsLoading(false);
     }

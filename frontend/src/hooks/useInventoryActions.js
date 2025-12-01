@@ -27,13 +27,14 @@ const useInventoryActions = () => {
       });
 
       if (!respuesta.ok) {
-        const errorData = await respuesta.json();
-        throw new Error(errorData.mensaje || 'Error al guardar el item en inventario.');
+        const errorData = await respuesta.json().catch(() => ({}));
+        const message = errorData.mensaje || 'Error al guardar el item en inventario.';
+        throw new Error(message);
       }
       return { success: true };
     } catch (err) {
       console.error("Error al agregar item al inventario:", err);
-      setError(err.message || 'Error de conexión con el servidor');
+      setError(err.message);
       return { success: false, message: err.message };
     } finally {
       setIsLoading(false);

@@ -20,13 +20,15 @@ const useInventory = (area) => {
         }
       });
       if (!res.ok) {
-        throw new Error(`Error fetching inventory: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        const message = errorData.mensaje || res.statusText;
+        throw new Error(`Error fetching inventory: ${message}`);
       }
       const data = await res.json();
       setProductos(data);
     } catch (err) {
       console.error("Error al cargar inventario:", err);
-      setError('Error al cargar el inventario.');
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -49,14 +51,16 @@ const useInventory = (area) => {
         }
       });
       if (!res.ok) {
-        throw new Error(`Error deleting item: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        const message = errorData.mensaje || res.statusText;
+        throw new Error(`Error deleting item: ${message}`);
       }
       await fetchInventory(); // Refresh the list after deletion
       return { success: true };
     } catch (err) {
       console.error("Error al eliminar item:", err);
-      setError('Error al eliminar el item.');
-      return { success: false, message: 'Error al eliminar el item.' };
+      setError(err.message);
+      return { success: false, message: err.message };
     } finally {
       setIsLoading(false);
     }
@@ -77,14 +81,16 @@ const useInventory = (area) => {
         body: JSON.stringify({ cantidad: newQuantity })
       });
       if (!res.ok) {
-        throw new Error(`Error updating quantity: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        const message = errorData.mensaje || res.statusText;
+        throw new Error(`Error updating quantity: ${message}`);
       }
       await fetchInventory(); // Refresh the list after update
       return { success: true };
     } catch (err) {
       console.error("Error al actualizar cantidad:", err);
-      setError('Error al actualizar la cantidad.');
-      return { success: false, message: 'Error al actualizar la cantidad.' };
+      setError(err.message);
+      return { success: false, message: err.message };
     } finally {
       setIsLoading(false);
     }
