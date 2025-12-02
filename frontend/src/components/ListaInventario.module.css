@@ -90,3 +90,55 @@
   border-radius: 4px;
   padding: 5px;
 }
+
+.quantityInput {
+  width: 70px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.saveButton {
+  cursor: pointer;
+  background: #e8f5e9;
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  padding: 5px 10px;
+  margin-right: 5px;
+}
+
+.cancelButton {
+  cursor: pointer;
+  background: #fce4ec;
+  border: 1px solid #f06292;
+  border-radius: 4px;
+  padding: 5px 10px;
+}
+
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #ffebee;
+  border: 1px solid #e57373;
+  border-radius: 8px;
+}
+
+.error {
+  color: #c62828;
+  margin: 0;
+  margin-right: 15px;
+}
+
+.retryButton {
+  padding: 10px 20px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+

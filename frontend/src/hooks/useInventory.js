@@ -2,6 +2,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import API_URL from '../config';
 
+const handleApiError = async (res) => {
+  if (res.ok) return null;
+
+  try {
+    const errorData = await res.json();
+    return errorData.mensaje || `Error: ${res.statusText}`;
+  } catch (e) {
+    return `Error: ${res.statusText}`;
+  }
+};
+
 const useInventory = (area) => {
   const [productos, setProductos] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,15 +26,12 @@ const useInventory = (area) => {
     setError(null);
     try {
       const res = await fetch(`${API_URL}/inventario/${area}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        const message = errorData.mensaje || res.statusText;
-        throw new Error(`Error fetching inventory: ${message}`);
-      }
+      
+      const apiError = await handleApiError(res);
+      if (apiError) throw new Error(apiError);
+
       const data = await res.json();
       setProductos(data);
     } catch (err) {
@@ -46,16 +54,13 @@ const useInventory = (area) => {
     try {
       const res = await fetch(`${API_URL}/inventario/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        const message = errorData.mensaje || res.statusText;
-        throw new Error(`Error deleting item: ${message}`);
-      }
-      await fetchInventory(); // Refresh the list after deletion
+
+      const apiError = await handleApiError(res);
+      if (apiError) throw new Error(apiError);
+
+      await fetchInventory();
       return { success: true };
     } catch (err) {
       console.error("Error al eliminar item:", err);
@@ -80,12 +85,11 @@ const useInventory = (area) => {
         },
         body: JSON.stringify({ cantidad: newQuantity })
       });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        const message = errorData.mensaje || res.statusText;
-        throw new Error(`Error updating quantity: ${message}`);
-      }
-      await fetchInventory(); // Refresh the list after update
+
+      const apiError = await handleApiError(res);
+      if (apiError) throw new Error(apiError);
+      
+      await fetchInventory();
       return { success: true };
     } catch (err) {
       console.error("Error al actualizar cantidad:", err);

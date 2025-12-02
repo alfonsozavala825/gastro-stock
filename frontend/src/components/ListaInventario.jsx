@@ -1,26 +1,58 @@
 import React, { useState } from 'react';
 import ModalAgregar from './ModalAgregar';
+import ConfirmModal from './ConfirmModal';
 import useInventory from '../hooks/useInventory';
-import styles from './ListaInventario.module.css'; // Import the CSS module
+import styles from './ListaInventario.module.css';
 
 function ListaInventario({ area }) {
   const { productos, isLoading, error, fetchInventory, deleteItem, updateQuantity } = useInventory(area);
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [newQuantity, setNewQuantity] = useState('');
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
-  const handleDeleteItem = async (id) => {
-    if (!confirm("¿Eliminar este registro del inventario?")) return;
-    await deleteItem(id);
+  const handleDeleteClick = (id) => {
+    setItemToDelete(id);
+    setDeleteModalOpen(true);
   };
 
-  const handleEditQuantity = async (item) => {
-    const nuevaCantidad = prompt(`Nueva cantidad para ${item.ingrediente?.nombre}:`, item.cantidad);
-    if (nuevaCantidad !== null && !isNaN(nuevaCantidad)) {
-      await updateQuantity(item._id, nuevaCantidad);
+  const handleConfirmDelete = async () => {
+    if (itemToDelete) {
+      await deleteItem(itemToDelete);
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
+    }
+  };
+
+  const handleEditClick = (item) => {
+    setEditingId(item._id);
+    setNewQuantity(item.cantidad);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setNewQuantity('');
+  };
+
+  const handleUpdateQuantity = async (id) => {
+    if (newQuantity !== null && !isNaN(newQuantity)) {
+      await updateQuantity(id, newQuantity);
+      handleCancelEdit(); // Salir del modo edición
     }
   };
 
   if (isLoading) return <p>Cargando inventario...</p>;
-  if (error) return <p className={styles.error}>Error: {error}</p>;
+  if (error) {
+    return (
+      <div className={styles.errorContainer}>
+        <p className={styles.error}>Error: {error}</p>
+        <button onClick={() => fetchInventory()} className={styles.retryButton}>
+          Reintentar
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -55,23 +87,31 @@ function ListaInventario({ area }) {
                 <tr key={item._id} className={styles.tableRow}>
                   <td className={`${styles.td} ${styles.tdBold}`}>{item.ingrediente?.nombre || 'Desconocido'}</td>
                   <td className={`${styles.td} ${styles.tdSecondary}`}>{item.ingrediente?.detalle}</td>
-                  <td className={styles.td}>{item.cantidad} {item.ingrediente?.unidad}</td>
+                  <td className={styles.td}>
+                    {editingId === item._id ? (
+                      <input
+                        type="number"
+                        value={newQuantity}
+                        onChange={(e) => setNewQuantity(e.target.value)}
+                        className={styles.quantityInput}
+                      />
+                    ) : (
+                      `${item.cantidad} ${item.ingrediente?.unidad}`
+                    )}
+                  </td>
                   <td className={`${styles.td} ${styles.tdSuccess}`}>${item.valorTotal.toFixed(2)}</td>
                   <td className={styles.actionsCell}>
-                    <button 
-                      onClick={() => handleEditQuantity(item)} 
-                      title="Editar Cantidad"
-                      className={styles.editButton}
-                    >
-                      ✏️
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteItem(item._id)} 
-                      title="Eliminar"
-                      className={styles.deleteButton}
-                    >
-                      🗑️
-                    </button>
+                    {editingId === item._id ? (
+                      <>
+                        <button onClick={() => handleUpdateQuantity(item._id)} className={styles.saveButton}>✓</button>
+                        <button onClick={handleCancelEdit} className={styles.cancelButton}>✗</button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={() => handleEditClick(item)} title="Editar Cantidad" className={styles.editButton}>✏️</button>
+                        <button onClick={() => handleDeleteClick(item._id)} title="Eliminar" className={styles.deleteButton}>🗑️</button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -83,6 +123,13 @@ function ListaInventario({ area }) {
       {mostrarModal && (
         <ModalAgregar area={area} cerrarModal={() => setMostrarModal(false)} alGuardar={fetchInventory} />
       )}
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        message="¿Estás seguro de que quieres eliminar este registro del inventario?"
+      />
     </div>
   );
 }

@@ -20,7 +20,10 @@ app.use('/api/historico', historicoRoutes);
 // Conexión a Base de Datos
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('Conectado a MongoDB'))
-    .catch((err) => console.error('Error conectando a Mongo:', err));
+    .catch((err) => {
+        console.error('No se pudo conectar a MongoDB. Saliendo...', err);
+        process.exit(1);
+    });
 
 // --- RUTAS ---
 const ingredientesRoutes = require('./routes/ingredientes');

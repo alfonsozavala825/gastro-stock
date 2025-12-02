@@ -26,10 +26,12 @@ const useHistorico = () => {
       }
       const data = await res.json();
       setMovimientos(data);
-    } catch (err) => {
+    } catch (err) {
       console.error("Error al cargar histórico:", err);
       setError(err.message);
     } finally {
+      setIsLoading(false);
+    }
   }, [token]);
 
   useEffect(() => {

@@ -1,0 +1,14 @@
+# Exported from Render on 2025-11-29T20:11:03Z
+version: "1"
+services:
+- type: web
+  name: gastro-frontend
+  runtime: static
+  repo: https://github.com/alfonsozavala825/gastro-stock
+  envVars:
+  - key: VITE_API_URL
+    sync: false
+  buildCommand: npm run build
+  staticPublishPath: dist
+  autoDeployTrigger: commit
+  rootDir: frontend

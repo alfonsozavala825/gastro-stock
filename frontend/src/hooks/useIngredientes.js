@@ -27,7 +27,7 @@ const useIngredientes = () => {
       }
       const data = await res.json();
       setIngredientes(data);
-    } catch (err) => {
+    } catch (err) {
       console.error("Error cargando catálogo de ingredientes:", err);
       setError(err.message);
     } finally {
