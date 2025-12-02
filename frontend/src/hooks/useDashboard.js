@@ -9,7 +9,7 @@ const useDashboard = () => {
     porArea: { ALMACEN: 0, COCINA: 0, ENSALADA: 0, ISLA: 0 },
     inventarioGlobal: [],
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const { token } = useAuth();
 
