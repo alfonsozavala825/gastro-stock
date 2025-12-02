@@ -92,7 +92,7 @@ function Dashboard() {
       </div>
 
       {/* GRÁFICA */}
-     {/* GRÁFICA */}
+     {dataGrafica && dataGrafica.length > 0 && (
       <div className="card" style={{ marginBottom: '20px', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)' }}>
         <h3 style={{ marginTop: 0 }}>Valor del Inventario por Ubicación 📊</h3>
         <div style={{ width: '100%', height: '350px', minHeight: '350px', marginTop: '20px' }}>
@@ -115,6 +115,7 @@ function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
+      )}
 
       {/* --- TABLA DE INVENTARIO GLOBAL --- */}
       <div className="card" style={{ padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)' }}>
