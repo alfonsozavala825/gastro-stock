@@ -26,11 +26,17 @@ router.post('/login', async (req, res) => {
     }
 
     // 3. Si todo está bien, creamos el TOKEN (La tarjeta de acceso)
-    const token = jwt.sign({ id: usuario._id }, JWT_SECRET, { expiresIn: '1d' });
+    const payload = {
+      user: {
+        id: usuario.id,
+        rol: usuario.rol
+      }
+    };
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
 
     res.json({ 
       token, 
-      usuario: { nombre: usuario.nombre, email: usuario.email } 
+      usuario: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol } 
     });
 
   } catch (error) {
@@ -50,7 +56,8 @@ router.post('/setup-admin', async (req, res) => {
   const admin = new Usuario({
     email: 'admin@admin.com',
     password: passwordHash,
-    nombre: 'Administrador'
+    nombre: 'Administrador',
+    rol: 'admin'
   });
 
   await admin.save();

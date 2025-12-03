@@ -7,6 +7,10 @@ import Ingredientes from './components/Ingredientes';
 import Login from './components/Login';
 import Historico from './components/Historico';
 import Escaner from './components/Escaner';
+import AdminRoute from './components/AdminRoute'; // <-- Importar ruta protegida
+import GestionUsuarios from './components/Admin/GestionUsuarios'; // <-- Importar componente admin
+import HistorialSnapshots from './components/Snapshots/HistorialSnapshots'; // <-- Importar snapshots
+import VistaSnapshot from './components/Snapshots/VistaSnapshot'; // <-- Importar vista de snapshot
 import { useAuth } from './context/AuthContext';
 
 
@@ -53,6 +57,13 @@ function App() {
           <Route path="/ingredientes" element={<Ingredientes />} />
           <Route path="/historico" element={<Historico />} />
           <Route path="/escaner" element={<Escaner />} />
+          <Route path="/snapshots" element={<HistorialSnapshots />} />
+          <Route path="/snapshots/:id" element={<VistaSnapshot />} />
+
+          {/* Rutas de Administrador */}
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/usuarios" element={<GestionUsuarios />} />
+          </Route>
 
           {/* Fallback for unknown routes */}
           <Route path="*" element={<Navigate to="/dashboard" />} />

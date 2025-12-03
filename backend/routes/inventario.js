@@ -115,4 +115,70 @@ router.get('/:area', async (req, res) => {
   }
 });
 
+const { auth, admin } = require('../middleware/auth');
+const InventarioSnapshot = require('../models/InventarioSnapshot');
+
+// ... (código existente)
+
+// 4. CREAR UN SNAPSHOT DEL INVENTARIO (Solo Admin)
+router.post('/snapshot', [auth, admin], async (req, res) => {
+  try {
+    const { nombre } = req.body; // Nombre opcional para el snapshot
+
+    // 1. Obtener todo el inventario actual
+    const inventarioActual = await Inventario.find().populate('ingrediente');
+
+    if (inventarioActual.length === 0) {
+      return res.status(400).json({ mensaje: 'El inventario está vacío, no se puede crear un snapshot.' });
+    }
+
+    // 2. Mapear al formato del snapshot (desnormalizado)
+    const inventarioParaSnapshot = inventarioActual.map(item => {
+      // Si un ingrediente fue borrado pero aún existe en el inventario, manejarlo
+      if (!item.ingrediente) {
+        return {
+          nombreIngrediente: 'Ingrediente Eliminado',
+          unidad: 'N/A',
+          costo: 0,
+          area: item.area,
+          cantidad: item.cantidad,
+          valorTotal: 0
+        };
+      }
+      return {
+        nombreIngrediente: item.ingrediente.nombre,
+        unidad: item.ingrediente.unidad,
+        costo: item.ingrediente.costo,
+        area: item.area,
+        cantidad: item.cantidad,
+        valorTotal: item.valorTotal
+      };
+    });
+
+    // 3. Calcular el valor total
+    const valorTotalInventario = inventarioParaSnapshot.reduce((acc, item) => acc + item.valorTotal, 0);
+
+    // 4. Crear y guardar el snapshot
+    const nuevoSnapshot = new InventarioSnapshot({
+      fecha: new Date(),
+      nombre: nombre, // Puede ser undefined si no se provee
+      inventario: inventarioParaSnapshot,
+      valorTotalInventario
+    });
+
+    await nuevoSnapshot.save();
+
+    res.status(201).json({ mensaje: 'Snapshot del inventario creado exitosamente.', snapshot: nuevoSnapshot });
+
+  } catch (error) {
+    // Manejo de error de clave única duplicada
+    if (error.code === 11000) {
+      return res.status(409).json({ mensaje: 'Conflicto: Ya se creó un snapshot en este mismo momento. Inténtalo de nuevo.' });
+    }
+    console.error("Error creando snapshot:", error);
+    res.status(500).json({ mensaje: 'Error en el servidor al crear el snapshot.' });
+  }
+});
+
+
 module.exports = router;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaChartPie, FaBox, FaHistory, FaUtensils, FaLeaf, FaStore, FaClipboardList, FaBars, FaChevronLeft, FaQrcode } from 'react-icons/fa';
+import { FaChartPie, FaBox, FaHistory, FaUtensils, FaLeaf, FaStore, FaClipboardList, FaBars, FaChevronLeft, FaQrcode, FaUsersCog, FaCamera } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import styles from './Sidebar.module.css'; // Import the CSS module
@@ -53,9 +53,15 @@ function Sidebar({ onLogout, temaActual, toggleTema }) {
         <BotonMenu to="/cocina" icono={<FaUtensils />} etiqueta="Cocina" abierto={abierto} />
         <BotonMenu to="/ensalada" icono={<FaLeaf />} etiqueta="Ensalada" abierto={abierto} />
         <BotonMenu to="/isla" icono={<FaStore />} etiqueta="Isla" abierto={abierto} />
-        <BotonMenu to="/historico" icono={<FaHistory />} etiqueta="Historial" abierto={abierto} />
+        <BotonMenu to="/historico" icono={<FaHistory />} etiqueta="Movimientos" abierto={abierto} />
+        <BotonMenu to="/snapshots" icono={<FaCamera />} etiqueta="Snapshots" abierto={abierto} />
         
         <hr className={styles.divider} />
+        
+        {/* Renderizado condicional para el botón de Admin */}
+        {user && user.rol === 'admin' && (
+          <BotonMenu to="/admin/usuarios" icono={<FaUsersCog />} etiqueta="Usuarios" abierto={abierto} />
+        )}
         
         <BotonMenu to="/ingredientes" icono={<FaClipboardList />} etiqueta="Configuración" abierto={abierto} />
         <BotonMenu to="/escaner" icono={<FaQrcode />} etiqueta="Escaner" abierto={abierto} />
@@ -88,5 +94,6 @@ function Sidebar({ onLogout, temaActual, toggleTema }) {
     </div>
   );
 }
+
 
 export default Sidebar;

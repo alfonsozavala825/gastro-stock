@@ -19,7 +19,15 @@ app.use('/api/historico', historicoRoutes);
 
 // Conexión a Base de Datos
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('Conectado a MongoDB'))
+    .then(() => {
+        console.log('Conectado a MongoDB');
+
+        // --- ARRANCAR SERVIDOR --- (Solo si la DB conecta)
+        const PORT = process.env.PORT || 5000;
+        app.listen(PORT, () => {
+            console.log(`Servidor corriendo en el puerto ${PORT}`);
+        });
+    })
     .catch((err) => {
         console.error('No se pudo conectar a MongoDB. Saliendo...', err);
         process.exit(1);
@@ -30,18 +38,20 @@ const ingredientesRoutes = require('./routes/ingredientes');
 const inventarioRoutes = require('./routes/inventario');
 const authRoutes = require('./routes/auth'); // Nueva ruta de seguridad
 const dashboardRoutes = require('./routes/dashboard');
+const usuariosRoutes = require('./routes/usuarios');
+const snapshotsRoutes = require('./routes/snapshots');
 
 app.use('/api/ingredientes', ingredientesRoutes);
 app.use('/api/inventario', inventarioRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/snapshots', snapshotsRoutes);
 
 app.get('/', (req, res) => {
     res.send('¡Hola! El servidor del Inventario está funcionando 🚀');
 });
 
 // --- ARRANCAR SERVIDOR ---
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
-});
+// Movido adentro del .then() de mongoose.connect para asegurar que la DB esté lista.
+
